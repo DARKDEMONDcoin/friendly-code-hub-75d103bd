@@ -620,14 +620,14 @@ const MobileChatLanding = ({
 
       {/* Scrollable hero area — neobrutalist sticker style (matches /settings/referrals) */}
       <div
-        className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y pt-6 pb-[220px] px-5"
+        className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y pt-[max(env(safe-area-inset-top),16px)] pb-[clamp(180px,32vh,260px)] px-5"
         style={{
           backgroundColor: "hsl(var(--brand-ink))",
           color: "hsl(var(--brand-parchment))",
           fontFamily: '"Space Grotesk", "Inter", system-ui, sans-serif',
         }}
       >
-        <div className="min-h-full flex flex-col items-center justify-center text-center">
+        <div className="min-h-full flex flex-col items-center justify-start text-center pt-[clamp(48px,14vh,140px)]">
           <div className="flex flex-col items-center justify-center gap-4 w-full max-w-sm">
             {/* Display headline — 900 weight, tight letter spacing */}
             {!isReactive && (

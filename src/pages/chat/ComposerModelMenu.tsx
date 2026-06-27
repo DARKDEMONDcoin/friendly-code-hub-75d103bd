@@ -123,7 +123,7 @@ export default function ComposerModelMenu({
           aria-label="Choose model"
           aria-expanded={open}
         >
-          {!noIcon && (
+          {!noIcon && !(variant === "pill" && isMediaMode) && (
             <span
               className={
                 variant === "segment"
