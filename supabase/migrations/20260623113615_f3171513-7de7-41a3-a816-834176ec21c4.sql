@@ -1,0 +1,1 @@
+CREATE POLICY "Service role only bot_pending_actions" ON public.bot_pending_actions FOR ALL TO service_role USING (true) WITH CHECK (true);

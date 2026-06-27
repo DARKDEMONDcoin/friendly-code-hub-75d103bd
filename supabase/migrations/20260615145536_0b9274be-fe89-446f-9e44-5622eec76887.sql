@@ -1,0 +1,2 @@
+ALTER TABLE public.media_provider_keys DROP CONSTRAINT IF EXISTS media_provider_keys_provider_check;
+ALTER TABLE public.media_provider_keys ADD CONSTRAINT media_provider_keys_provider_check CHECK (provider = ANY (ARRAY['alibaba'::text, 'byteplus'::text, 'vercel'::text]));
