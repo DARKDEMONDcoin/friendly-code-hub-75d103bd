@@ -624,6 +624,17 @@ async function acquireKey(
       if (keyErr) throw keyErr;
       const row = Array.isArray(rows) ? rows[0] : null;
       if (row?.api_key) {
+        // Auto-derive workspace endpoint for sk-ws-* keys when not set.
+        // DashScope workspace keys (sk-ws-<ws>.<rand>...) must hit
+        // ws-<ws>.<region>.maas.aliyuncs.com, not the default intl host.
+        let derivedHost: string | null = row.endpoint_host ?? null;
+        let derivedWs: string | null = row.workspace_id ?? null;
+        if (!derivedHost && !derivedWs && typeof row.api_key === "string" && row.api_key.startsWith("sk-ws-")) {
+          const wsId = row.api_key.slice("sk-ws-".length).split(".")[0];
+          if (wsId) {
+            derivedHost = `ws-${wsId}.ap-southeast-1.maas.aliyuncs.com`;
+          }
+        }
         admin.from("media_provider_keys")
           .update({ updated_at: new Date().toISOString() })
           .eq("id", row.id)
@@ -631,8 +642,8 @@ async function acquireKey(
         return {
           key_id: row.id,
           api_key: row.api_key,
-          workspace_id: row.workspace_id ?? null,
-          endpoint_host: row.endpoint_host ?? null,
+          workspace_id: derivedWs,
+          endpoint_host: derivedHost,
         };
       }
     } catch (e) {
