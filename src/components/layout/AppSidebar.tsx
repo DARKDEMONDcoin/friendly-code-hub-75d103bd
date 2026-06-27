@@ -285,7 +285,11 @@ const AppSidebar = ({
 
     const validModes = ["code", "images", "videos", "learning", "shopping", "research", "slides"];
     const modeFilter = validModes.includes(currentMode) ? currentMode : "chat";
-    const modesToFetch = showsUnifiedChatHistory ? ["chat", "research", "slides"] : [modeFilter];
+    const modesToFetch = showsAllServicesHistory
+      ? ["chat", "research", "slides", "videos", "images", "code", "learning", "shopping"]
+      : showsUnifiedChatHistory
+        ? ["chat", "research", "slides"]
+        : [modeFilter];
 
     const { data: memberRows } = await supabase
       .from("conversation_members")
