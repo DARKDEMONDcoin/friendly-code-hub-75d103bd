@@ -133,7 +133,7 @@ const AppSidebar = ({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const isBuildMode = currentMode === "build";
-  const showRecent = ["chat", "learning", "shopping", "research", "slides"].includes(currentMode);
+  const showRecent = ["chat", "learning", "shopping", "research", "slides", "videos", "images", "code"].includes(currentMode);
   const showsUnifiedChatHistory =
     currentMode === "chat" || currentMode === "research" || currentMode === "slides";
 
