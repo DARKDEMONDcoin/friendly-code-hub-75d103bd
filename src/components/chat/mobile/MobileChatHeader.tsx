@@ -16,7 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import MegsyStar from "@/components/files/MegsyStar";
-import NotificationCenter from "@/components/notifications/NotificationCenter";
+
 
 type MenuView = "main" | "rename" | "invite" | "share" | "delete";
 
