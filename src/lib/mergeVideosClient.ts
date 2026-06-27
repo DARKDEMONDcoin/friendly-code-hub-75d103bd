@@ -98,6 +98,8 @@ export async function mergeVideosInBrowser(
     /* ignore */
   }
 
-  const arr = out instanceof Uint8Array ? out : new Uint8Array(out as ArrayBuffer);
-  return new Blob([arr], { type: "video/mp4" });
+  const src = typeof out === "string" ? new TextEncoder().encode(out) : (out as Uint8Array);
+  const arr = new Uint8Array(src.byteLength);
+  arr.set(src);
+  return new Blob([arr.buffer], { type: "video/mp4" });
 }
