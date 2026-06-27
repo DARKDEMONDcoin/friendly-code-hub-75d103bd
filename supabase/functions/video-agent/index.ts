@@ -195,52 +195,14 @@ async function downloadToBytes(url: string): Promise<Uint8Array> {
   return b;
 }
 
-async function mergeClips(urls: string[], audioUrl?: string): Promise<Uint8Array> {
-  // Lazy-import ffmpeg.wasm only when merging is requested.
-  // Note: in Supabase Edge Runtime this loads from esm.sh.
-  const { FFmpeg } = await import("https://esm.sh/@ffmpeg/ffmpeg@0.12.10");
-  const { fetchFile } = await import("https://esm.sh/@ffmpeg/util@0.12.1");
-  const ffmpeg = new FFmpeg();
-  await ffmpeg.load({
-    coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js",
-    wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm",
-  });
-
-  const listLines: string[] = [];
-  for (let i = 0; i < urls.length; i++) {
-    const name = `c${i}.mp4`;
-    const bytes = await downloadToBytes(urls[i]);
-    await ffmpeg.writeFile(name, bytes);
-    listLines.push(`file '${name}'`);
-  }
-  await ffmpeg.writeFile("list.txt", new TextEncoder().encode(listLines.join("\n")));
-
-  // Concat demuxer with stream copy (fast, no re-encode). Requires identical codec/res across clips.
-  await ffmpeg.exec([
-    "-f", "concat",
-    "-safe", "0",
-    "-i", "list.txt",
-    "-c", "copy",
-    "out.mp4",
-  ]);
-
-  let finalBytes = (await ffmpeg.readFile("out.mp4")) as Uint8Array;
-
-  if (audioUrl) {
-    const audio = await downloadToBytes(audioUrl);
-    await ffmpeg.writeFile("voice.bin", audio);
-    await ffmpeg.exec([
-      "-i", "out.mp4",
-      "-i", "voice.bin",
-      "-c:v", "copy",
-      "-c:a", "aac",
-      "-shortest",
-      "final.mp4",
-    ]);
-    finalBytes = (await ffmpeg.readFile("final.mp4")) as Uint8Array;
-  }
-  return finalBytes;
+async function mergeClips(_urls: string[], _audioUrl?: string): Promise<Uint8Array> {
+  // ffmpeg.wasm (@ffmpeg/ffmpeg 0.12+) requires Web Workers, which are not
+  // available in the Supabase Edge Runtime ("Worker is not defined"). Until
+  // we move merging to a worker queue / native ffmpeg service, surface a
+  // clear error so callers can fall back to returning individual clip URLs.
+  throw new Error("merge_unsupported_in_edge_runtime");
 }
+
 
 const STORAGE_BUCKET = "media-studio";
 
