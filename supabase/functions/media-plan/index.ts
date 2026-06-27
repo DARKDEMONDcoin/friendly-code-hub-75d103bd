@@ -35,43 +35,45 @@ interface PlanResult {
 }
 
 const SYSTEM_VIDEO = `You are a senior creative director who plans short AI-generated video pieces.
-Given a user idea and a chosen model, design a coherent scene-by-scene plan.
+Given a user idea and a chosen model, design a coherent plan.
 
 RULES:
-- Reply in clean English only.
-- 2–6 scenes by default. Each scene must be a single shot (no cuts inside a scene).
-- Each scene gets a vivid, self-contained prompt — describe subject, environment, camera, lighting, mood.
-- duration_seconds for each scene: 4, 5, 6, 8, or 10. Default 5.
-- Keep the visual style and characters consistent across scenes.
-- Output STRICT JSON only, no commentary, matching the schema. NO markdown fences.
+- Default to EXACTLY 1 scene (a single video clip). Most users want one clip per request.
+- Only return multiple scenes (2–6) if the user EXPLICITLY asks for a story / sequence / multiple scenes / "مشاهد" / "قصة" / "scenes" / "story" / numbered shots. Otherwise return 1.
+- Each scene is a single continuous shot (no cuts inside a scene). No editing terms ("cut to", "split-screen", "transition").
+- The scene "prompt" MUST be written in the SAME LANGUAGE the user used in their idea (Arabic → Arabic, English → English, etc.). Do NOT translate.
+- The "summary" and "title" must also be in the user's language.
+- duration_seconds: 4, 5, 6, 8, or 10. Default 5.
+- Output STRICT JSON only, no commentary, no markdown fences.
 
 Schema:
 {
-  "summary": "1–2 sentences in the user's language describing the overall piece",
+  "summary": "1 sentence in the user's language",
   "scenes": [
-    { "index": 1, "title": "short scene label", "prompt": "detailed shot prompt in English (models prefer EN)", "duration_seconds": 5 }
+    { "index": 1, "title": "short label in user's language", "prompt": "vivid shot prompt in the SAME language as the user input", "duration_seconds": 5 }
   ],
-  "estimated_total_seconds": 25,
-  "notes": "optional caveats"
+  "estimated_total_seconds": 5,
+  "notes": "optional"
 }`;
 
 const SYSTEM_IMAGES = `You are a senior art director who analyzes a user's image prompt before generation.
 Given a user idea and a chosen model, design exactly ONE polished image prompt for the selected model.
 
 RULES:
-- Reply in clean English only.
 - Return exactly 1 scene. The product generates one image by default, not four.
+- The scene "prompt" MUST be in the SAME LANGUAGE the user used. Do NOT translate.
+- The "summary" and "title" must also be in the user's language.
 - The scene prompt must be vivid and self-contained: subject, framing, mood, lighting, style, camera/lens when useful.
-- In notes, always include this exact sentence: "If you want me to generate this with multiple models so you can compare results, tell me and I’ll do that."
+- In notes, always include this exact sentence (in the user's language if not English): "If you want me to generate this with multiple models so you can compare results, tell me and I'll do that."
 - Output STRICT JSON only, no commentary, no markdown fences.
 
 Schema:
 {
-  "summary": "1 concise English sentence describing the final image direction",
+  "summary": "1 concise sentence in user's language describing the final image direction",
   "scenes": [
-    { "index": 1, "title": "short shot label", "prompt": "detailed shot prompt in English" }
+    { "index": 1, "title": "short shot label in user's language", "prompt": "detailed shot prompt in user's language" }
   ],
-  "notes": "If you want me to generate this with multiple models so you can compare results, tell me and I’ll do that."
+  "notes": "If you want me to generate this with multiple models so you can compare results, tell me and I'll do that."
 }`;
 
 import { getDashscopeKey } from "../_shared/llm-router.ts";
@@ -174,12 +176,22 @@ Deno.serve(async (req) => {
     .filter(Boolean)
     .join("\n");
 
+  // Detect whether user explicitly requested multiple scenes/clips.
+  const multiSceneRegex =
+    /\b(scenes?|story|sequence|multi[- ]?scene|shots?|clips?|chapters?|montage|episode)\b|مشاهد|قصة|قصه|سيناريو|تسلسل|متعدد|مشهدين|عدة مقاطع|كذا مقطع/i;
+  const numberedRegex = /\b([2-6])\s*(scenes?|shots?|clips?|videos?|مقاطع|مشاهد|فيديو)/i;
+  const userWantsMulti = multiSceneRegex.test(prompt) || numberedRegex.test(prompt) || sceneHint > 1;
+
   try {
     const plan = await callGateway(system, userMsg);
     if (mode === "images") {
       plan.scenes = plan.scenes.slice(0, 1).map((scene) => ({ ...scene, index: 1 }));
       plan.notes =
-        "If you want me to generate this with multiple models so you can compare results, tell me and I’ll do that.";
+        "If you want me to generate this with multiple models so you can compare results, tell me and I'll do that.";
+    } else if (mode === "video" && !userWantsMulti) {
+      // Hard clamp: single video unless user explicitly asked for a story.
+      plan.scenes = plan.scenes.slice(0, 1).map((scene) => ({ ...scene, index: 1 }));
+      plan.estimated_total_seconds = plan.scenes[0]?.duration_seconds;
     }
     return json(plan);
   } catch (e) {
