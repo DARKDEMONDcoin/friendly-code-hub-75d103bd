@@ -19,6 +19,8 @@ export interface MediaPlan {
   scenes: MediaPlanScene[];
   estimatedTotalSeconds?: number;
   notes?: string;
+  /** User-selected aspect ratio (from MediaSettings) — passed through to the provider. */
+  aspectRatio?: string;
 }
 
 interface Props {

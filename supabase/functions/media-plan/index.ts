@@ -168,10 +168,13 @@ Deno.serve(async (req) => {
   }
 
   const system = mode === "video" ? SYSTEM_VIDEO : SYSTEM_IMAGES;
+  const targetCount = sceneHint > 0 ? sceneHint : 1;
   const userMsg = [
     `User idea: ${prompt}`,
     `Chosen model: ${modelName}`,
-    sceneHint ? `Preferred number of ${mode === "video" ? "scenes" : "shots"}: ${sceneHint}` : "",
+    `REQUIRED number of ${mode === "video" ? "scenes/clips" : "images"}: ${targetCount} (return EXACTLY this many).`,
+    body?.aspect_ratio ? `Aspect ratio: ${body.aspect_ratio}` : "",
+    body?.duration_seconds ? `Each clip duration: ${body.duration_seconds}s` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -184,14 +187,22 @@ Deno.serve(async (req) => {
 
   try {
     const plan = await callGateway(system, userMsg);
+    // Determine target scene count: prefer explicit sceneHint from settings,
+    // else honor language signals, else default 1.
+    const targetCount = sceneHint > 0
+      ? sceneHint
+      : (mode === "video" && userWantsMulti ? Math.min(6, plan.scenes.length) : 1);
+    plan.scenes = plan.scenes.slice(0, targetCount).map((scene, i) => ({ ...scene, index: i + 1 }));
+    // If LLM returned fewer scenes than requested, duplicate the last one to match count.
+    while (plan.scenes.length < targetCount && plan.scenes.length > 0) {
+      const last = plan.scenes[plan.scenes.length - 1];
+      plan.scenes.push({ ...last, index: plan.scenes.length + 1, title: `${last.title} (${plan.scenes.length + 1})` });
+    }
     if (mode === "images") {
-      plan.scenes = plan.scenes.slice(0, 1).map((scene) => ({ ...scene, index: 1 }));
       plan.notes =
         "If you want me to generate this with multiple models so you can compare results, tell me and I'll do that.";
-    } else if (mode === "video" && !userWantsMulti) {
-      // Hard clamp: single video unless user explicitly asked for a story.
-      plan.scenes = plan.scenes.slice(0, 1).map((scene) => ({ ...scene, index: 1 }));
-      plan.estimated_total_seconds = plan.scenes[0]?.duration_seconds;
+    } else {
+      plan.estimated_total_seconds = plan.scenes.reduce((acc, s) => acc + (s.duration_seconds ?? 0), 0) || undefined;
     }
     return json(plan);
   } catch (e) {

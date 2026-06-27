@@ -90,12 +90,15 @@ export async function runMediaTurn(args: RunMediaTurnArgs): Promise<void> {
       if (userMessageId) ownInsertedIdsRef.current.add(userMessageId);
     }
     let plan: MediaPlan;
+    const settings = loadMediaSettings(modeLocal === "video" ? "video" : "images");
+    const aspectRatio = settings.aspectRatio;
     if (isStartEnd) {
       plan = {
         mode: "video",
         modelSlug: modelLocal.slug,
         modelName: modelLocal.name,
         summary: text || "First → last frame interpolation",
+        aspectRatio,
         scenes: [
           {
             index: 1,
@@ -111,23 +114,23 @@ export async function runMediaTurn(args: RunMediaTurnArgs): Promise<void> {
       // Honor the "Prompt mode" toggle from MediaSettings. When the user
       // has disabled auto-prompt for video, skip the LLM planner entirely
       // and use their text verbatim as the single-scene prompt.
-      const settings = loadMediaSettings(modeLocal === "video" ? "video" : "images");
       const autoPrompt = settings.autoPrompt !== false; // default true
+      const count = settings.count ?? 1;
       if (modeLocal === "video" && !autoPrompt) {
+        const scenes = Array.from({ length: count }, (_, i) => ({
+          index: i + 1,
+          title: count > 1 ? `Clip ${i + 1}` : "Your prompt",
+          prompt: text,
+          duration_seconds: settings.duration ?? videoDurationSec,
+        }));
         plan = {
           mode: "video",
           modelSlug: modelLocal.slug,
           modelName: modelLocal.name,
           summary: text,
-          scenes: [
-            {
-              index: 1,
-              title: "Your prompt",
-              prompt: text,
-              duration_seconds: videoDurationSec,
-            },
-          ],
-          estimatedTotalSeconds: videoDurationSec,
+          aspectRatio,
+          scenes,
+          estimatedTotalSeconds: (settings.duration ?? videoDurationSec) * count,
           notes: "Manual prompt — sent to the model exactly as written.",
         };
       } else {
@@ -137,6 +140,9 @@ export async function runMediaTurn(args: RunMediaTurnArgs): Promise<void> {
             prompt: text,
             model_slug: modelLocal.slug,
             model_name: modelLocal.name,
+            scene_hint: count,
+            aspect_ratio: aspectRatio,
+            duration_seconds: modeLocal === "video" ? (settings.duration ?? videoDurationSec) : undefined,
           },
         });
         if (error || !data || !Array.isArray(data.scenes)) {
@@ -147,6 +153,7 @@ export async function runMediaTurn(args: RunMediaTurnArgs): Promise<void> {
           modelSlug: modelLocal.slug,
           modelName: modelLocal.name,
           summary: data.summary || "",
+          aspectRatio,
           scenes: data.scenes,
           estimatedTotalSeconds: data.estimated_total_seconds,
           notes: data.notes,

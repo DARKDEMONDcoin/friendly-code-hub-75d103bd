@@ -140,6 +140,7 @@ async function generateImageScene(
   scene: MediaPlanScene,
   modelSlug: string,
   onPartial?: ScenePartialCb,
+  aspectRatio?: string,
 ): Promise<string> {
   if (STREAMABLE_MODELS.has(modelSlug)) {
     try {
@@ -156,6 +157,7 @@ async function generateImageScene(
         prompt: scene.prompt,
         model_slug: modelSlug,
         num_images: 1,
+        aspect_ratio: aspectRatio,
       },
     });
     if (error) throw new Error(error.message || "image gen failed");
@@ -174,11 +176,13 @@ async function generateVideoScene(
   scene: MediaPlanScene,
   modelSlug: string,
   onPartial?: ScenePartialCb,
+  aspectRatio?: string,
 ): Promise<string> {
   const body: Record<string, unknown> = {
     prompt: scene.prompt,
     model_slug: modelSlug,
     duration: scene.duration_seconds || 5,
+    aspect_ratio: aspectRatio,
   };
   if (scene.first_frame_url) body.start_frame = scene.first_frame_url;
   if (scene.last_frame_url) body.end_frame = scene.last_frame_url;
@@ -258,8 +262,8 @@ export async function runMediaPlan(opts: RunMediaPlanOptions): Promise<void> {
       try {
         const url =
           plan.mode === "video"
-            ? await generateVideoScene(scene, plan.modelSlug, onScenePartial)
-            : await generateImageScene(scene, plan.modelSlug, onScenePartial);
+            ? await generateVideoScene(scene, plan.modelSlug, onScenePartial, plan.aspectRatio)
+            : await generateImageScene(scene, plan.modelSlug, onScenePartial, plan.aspectRatio);
         onSceneDone({
           index: scene.index,
           title: scene.title,
@@ -290,8 +294,8 @@ export async function regenerateScene(
   try {
     const url =
       plan.mode === "video"
-        ? await generateVideoScene(scene, plan.modelSlug, onPartial)
-        : await generateImageScene(scene, plan.modelSlug, onPartial);
+        ? await generateVideoScene(scene, plan.modelSlug, onPartial, plan.aspectRatio)
+        : await generateImageScene(scene, plan.modelSlug, onPartial, plan.aspectRatio);
     return {
       index: scene.index,
       title: scene.title,
