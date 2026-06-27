@@ -14,11 +14,14 @@ export interface MediaSettings {
   count: 1 | 2 | 3 | 4;
   /** Video only: clip duration in seconds. */
   duration?: 5 | 8 | 10 | 15;
+  /** Video only: when true (default), AI writes the cinematic prompt from your idea.
+   *  When false, your text is sent to the model as-is. */
+  autoPrompt?: boolean;
 }
 
 const DEFAULTS: Record<MediaMode, MediaSettings> = {
   images: { quality: "hd", aspectRatio: "1:1", count: 1 },
-  video: { quality: "standard", aspectRatio: "16:9", count: 1, duration: 5 },
+  video: { quality: "standard", aspectRatio: "16:9", count: 1, duration: 5, autoPrompt: true },
 };
 
 const storageKey = (mode: MediaMode) => `megsy.mediaSettings.v2.${mode}`;
@@ -146,6 +149,37 @@ export function MediaSettingsPanel({
           </span>
         </div>
       )}
+
+      {isVideo && (
+        <div className="min-w-0 border-b border-white/[0.06] py-3 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[11.5px] font-black uppercase tracking-[0.14em] text-brand-muted">
+              Prompt mode
+            </div>
+            <div className="text-[10.5px] text-brand-muted/80 font-semibold mt-1 leading-snug">
+              {settings.autoPrompt !== false
+                ? "AI turns your idea into a cinematic prompt."
+                : "Your text is sent to the model as-is."}
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={settings.autoPrompt !== false}
+            onClick={() => update({ autoPrompt: !(settings.autoPrompt !== false) })}
+            className={`shrink-0 mt-0.5 relative inline-flex h-7 w-12 items-center rounded-full border-2 border-brand-ink transition-colors ${
+              settings.autoPrompt !== false ? "bg-brand-action" : "bg-surface-3"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 rounded-full bg-brand-ink transition-transform ${
+                settings.autoPrompt !== false ? "translate-x-5" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
+      )}
+
 
       <Collapsible
         id="aspect"

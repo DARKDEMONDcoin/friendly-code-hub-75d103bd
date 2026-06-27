@@ -1,6 +1,8 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { loadMediaSettings } from "@/components/chat/mobile/MediaSettingsMenu";
 import type { Message, ChatMode } from "../chatConstants";
+
 
 export type MediaPlan = any;
 
@@ -106,27 +108,52 @@ export async function runMediaTurn(args: RunMediaTurnArgs): Promise<void> {
         ],
       };
     } else {
-      const { data, error } = await supabase.functions.invoke("media-plan", {
-        body: {
+      // Honor the "Prompt mode" toggle from MediaSettings. When the user
+      // has disabled auto-prompt for video, skip the LLM planner entirely
+      // and use their text verbatim as the single-scene prompt.
+      const settings = loadMediaSettings(modeLocal === "video" ? "video" : "images");
+      const autoPrompt = settings.autoPrompt !== false; // default true
+      if (modeLocal === "video" && !autoPrompt) {
+        plan = {
+          mode: "video",
+          modelSlug: modelLocal.slug,
+          modelName: modelLocal.name,
+          summary: text,
+          scenes: [
+            {
+              index: 1,
+              title: "Your prompt",
+              prompt: text,
+              duration_seconds: videoDurationSec,
+            },
+          ],
+          estimatedTotalSeconds: videoDurationSec,
+          notes: "Manual prompt — sent to the model exactly as written.",
+        };
+      } else {
+        const { data, error } = await supabase.functions.invoke("media-plan", {
+          body: {
+            mode: modeLocal,
+            prompt: text,
+            model_slug: modelLocal.slug,
+            model_name: modelLocal.name,
+          },
+        });
+        if (error || !data || !Array.isArray(data.scenes)) {
+          throw new Error(error?.message || data?.message || "Planning failed");
+        }
+        plan = {
           mode: modeLocal,
-          prompt: text,
-          model_slug: modelLocal.slug,
-          model_name: modelLocal.name,
-        },
-      });
-      if (error || !data || !Array.isArray(data.scenes)) {
-        throw new Error(error?.message || data?.message || "Planning failed");
+          modelSlug: modelLocal.slug,
+          modelName: modelLocal.name,
+          summary: data.summary || "",
+          scenes: data.scenes,
+          estimatedTotalSeconds: data.estimated_total_seconds,
+          notes: data.notes,
+        };
       }
-      plan = {
-        mode: modeLocal,
-        modelSlug: modelLocal.slug,
-        modelName: modelLocal.name,
-        summary: data.summary || "",
-        scenes: data.scenes,
-        estimatedTotalSeconds: data.estimated_total_seconds,
-        notes: data.notes,
-      };
     }
+
     const initialResults = plan.scenes.map((s: any) => ({
       index: s.index,
       title: s.title,
