@@ -195,52 +195,14 @@ async function downloadToBytes(url: string): Promise<Uint8Array> {
   return b;
 }
 
-async function mergeClips(urls: string[], audioUrl?: string): Promise<Uint8Array> {
-  // Lazy-import ffmpeg.wasm only when merging is requested.
-  // Note: in Supabase Edge Runtime this loads from esm.sh.
-  const { FFmpeg } = await import("https://esm.sh/@ffmpeg/ffmpeg@0.12.10");
-  const { fetchFile } = await import("https://esm.sh/@ffmpeg/util@0.12.1");
-  const ffmpeg = new FFmpeg();
-  await ffmpeg.load({
-    coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js",
-    wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm",
-  });
-
-  const listLines: string[] = [];
-  for (let i = 0; i < urls.length; i++) {
-    const name = `c${i}.mp4`;
-    const bytes = await downloadToBytes(urls[i]);
-    await ffmpeg.writeFile(name, bytes);
-    listLines.push(`file '${name}'`);
-  }
-  await ffmpeg.writeFile("list.txt", new TextEncoder().encode(listLines.join("\n")));
-
-  // Concat demuxer with stream copy (fast, no re-encode). Requires identical codec/res across clips.
-  await ffmpeg.exec([
-    "-f", "concat",
-    "-safe", "0",
-    "-i", "list.txt",
-    "-c", "copy",
-    "out.mp4",
-  ]);
-
-  let finalBytes = (await ffmpeg.readFile("out.mp4")) as Uint8Array;
-
-  if (audioUrl) {
-    const audio = await downloadToBytes(audioUrl);
-    await ffmpeg.writeFile("voice.bin", audio);
-    await ffmpeg.exec([
-      "-i", "out.mp4",
-      "-i", "voice.bin",
-      "-c:v", "copy",
-      "-c:a", "aac",
-      "-shortest",
-      "final.mp4",
-    ]);
-    finalBytes = (await ffmpeg.readFile("final.mp4")) as Uint8Array;
-  }
-  return finalBytes;
+async function mergeClips(_urls: string[], _audioUrl?: string): Promise<Uint8Array> {
+  // ffmpeg.wasm (@ffmpeg/ffmpeg 0.12+) requires Web Workers, which are not
+  // available in the Supabase Edge Runtime ("Worker is not defined"). Until
+  // we move merging to a worker queue / native ffmpeg service, surface a
+  // clear error so callers can fall back to returning individual clip URLs.
+  throw new Error("merge_unsupported_in_edge_runtime");
 }
+
 
 const STORAGE_BUCKET = "media-studio";
 
@@ -433,22 +395,37 @@ Deno.serve(async (req) => {
       });
 
       const audioUrl = body.audio_url || row?.output?.audio_url || undefined;
-      const merged = await mergeClips(urls, audioUrl);
-      const path = `video-agent/${job_id}.mp4`;
-      const finalUrl = await uploadToStorage(merged, path);
-
-      await db(`background_jobs?id=eq.${job_id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          status: "complete",
-          phase: "merged",
-          progress: 100,
-          output: { ...row.output, final_url: finalUrl },
-          finished_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString(),
-        }),
-      });
-      return json({ job_id, final_url: finalUrl, shots });
+      try {
+        const merged = await mergeClips(urls, audioUrl);
+        const path = `video-agent/${job_id}.mp4`;
+        const finalUrl = await uploadToStorage(merged, path);
+        await db(`background_jobs?id=eq.${job_id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "complete",
+            phase: "merged",
+            progress: 100,
+            output: { ...row.output, final_url: finalUrl },
+            finished_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString(),
+          }),
+        });
+        return json({ job_id, final_url: finalUrl, shots });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await db(`background_jobs?id=eq.${job_id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "complete",
+            phase: "clips_ready",
+            progress: 100,
+            output: { ...row.output, clip_urls: urls, merge_error: msg },
+            finished_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString(),
+          }),
+        });
+        return json({ job_id, clip_urls: urls, shots, merge_error: msg, merge_skipped: true });
+      }
     }
 
     // ── merge_urls (inline) ───────────────────────────────
@@ -460,12 +437,18 @@ Deno.serve(async (req) => {
         : [];
       if (urls.length < 1) return json({ error: "no_urls" }, 400);
       const audioUrl: string | undefined = body.audio_url || undefined;
-      const merged = await mergeClips(urls, audioUrl);
-      const id = crypto.randomUUID();
-      const path = `video-agent/inline-${id}.mp4`;
-      const finalUrl = await uploadToStorage(merged, path);
-      return json({ final_url: finalUrl, clip_count: urls.length });
+      try {
+        const merged = await mergeClips(urls, audioUrl);
+        const id = crypto.randomUUID();
+        const path = `video-agent/inline-${id}.mp4`;
+        const finalUrl = await uploadToStorage(merged, path);
+        return json({ final_url: finalUrl, clip_count: urls.length });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return json({ clip_urls: urls, clip_count: urls.length, merge_error: msg, merge_skipped: true });
+      }
     }
+
 
     return json({ error: "unknown_action" }, 400);
   } catch (err) {
