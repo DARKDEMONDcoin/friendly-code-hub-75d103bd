@@ -89,7 +89,7 @@ interface Props {
   /** Triggered when the user presses "Merge into one video". Only shown for video
    * results once 2+ scenes have finished successfully. */
   onMergeVideos?: () => void;
-  mergeStatus?: "idle" | "merging" | "done" | "error";
+  mergeStatus?: "idle" | "merging" | "done" | "error" | "unavailable";
   mergeError?: string;
   finalVideoUrl?: string;
 }
@@ -301,6 +301,14 @@ export default function MediaResultCard({
               <Loader2 className="w-4 h-4 animate-spin" />
               Stitching {videoDone.length} clips into one video… this can take a minute.
             </div>
+          ) : mergeStatus === "unavailable" ? (
+            <div className="flex items-start gap-2 text-[12px] text-muted-foreground py-2">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>
+                {mergeError ||
+                  "دمج المقاطع على الخادم غير متاح حاليًا. نزّل المقاطع وادمجها محليًا."}
+              </span>
+            </div>
           ) : mergeStatus === "error" ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-[12px] text-destructive">
@@ -312,6 +320,7 @@ export default function MediaResultCard({
                 Try merge again
               </Button>
             </div>
+
           ) : (
             <Button size="sm" onClick={onMergeVideos} className="w-full sm:w-auto">
               <Film className="w-3.5 h-3.5 me-1.5" />

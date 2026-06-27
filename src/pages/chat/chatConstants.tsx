@@ -74,7 +74,7 @@ export interface Message {
   mediaResults?: MediaSceneResult[];
   /** Final merged video URL after stitching all video scenes together. */
   mediaFinalVideoUrl?: string;
-  mediaMergeStatus?: "idle" | "merging" | "done" | "error";
+  mediaMergeStatus?: "idle" | "merging" | "done" | "error" | "unavailable";
   mediaMergeError?: string;
   /** Reference to a row in `generated_sites` — rendered as a live build card. */
   siteBuild?: { siteId: string };
