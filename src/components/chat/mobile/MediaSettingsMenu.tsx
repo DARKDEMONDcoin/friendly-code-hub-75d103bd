@@ -14,11 +14,14 @@ export interface MediaSettings {
   count: 1 | 2 | 3 | 4;
   /** Video only: clip duration in seconds. */
   duration?: 5 | 8 | 10 | 15;
+  /** Video only: when true (default), AI writes the cinematic prompt from your idea.
+   *  When false, your text is sent to the model as-is. */
+  autoPrompt?: boolean;
 }
 
 const DEFAULTS: Record<MediaMode, MediaSettings> = {
   images: { quality: "hd", aspectRatio: "1:1", count: 1 },
-  video: { quality: "standard", aspectRatio: "16:9", count: 1, duration: 5 },
+  video: { quality: "standard", aspectRatio: "16:9", count: 1, duration: 5, autoPrompt: true },
 };
 
 const storageKey = (mode: MediaMode) => `megsy.mediaSettings.v2.${mode}`;
