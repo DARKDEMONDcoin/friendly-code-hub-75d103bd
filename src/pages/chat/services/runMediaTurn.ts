@@ -1,6 +1,8 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { loadMediaSettings } from "@/components/chat/mobile/MediaSettingsMenu";
 import type { Message, ChatMode } from "../chatConstants";
+
 
 export type MediaPlan = any;
 
