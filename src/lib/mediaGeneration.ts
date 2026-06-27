@@ -262,8 +262,8 @@ export async function runMediaPlan(opts: RunMediaPlanOptions): Promise<void> {
       try {
         const url =
           plan.mode === "video"
-            ? await generateVideoScene(scene, plan.modelSlug, onScenePartial)
-            : await generateImageScene(scene, plan.modelSlug, onScenePartial);
+            ? await generateVideoScene(scene, plan.modelSlug, onScenePartial, plan.aspectRatio)
+            : await generateImageScene(scene, plan.modelSlug, onScenePartial, plan.aspectRatio);
         onSceneDone({
           index: scene.index,
           title: scene.title,
