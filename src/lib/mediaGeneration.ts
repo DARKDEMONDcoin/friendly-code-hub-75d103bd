@@ -140,6 +140,7 @@ async function generateImageScene(
   scene: MediaPlanScene,
   modelSlug: string,
   onPartial?: ScenePartialCb,
+  aspectRatio?: string,
 ): Promise<string> {
   if (STREAMABLE_MODELS.has(modelSlug)) {
     try {
@@ -156,6 +157,7 @@ async function generateImageScene(
         prompt: scene.prompt,
         model_slug: modelSlug,
         num_images: 1,
+        aspect_ratio: aspectRatio,
       },
     });
     if (error) throw new Error(error.message || "image gen failed");
