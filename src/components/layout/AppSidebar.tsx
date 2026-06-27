@@ -136,6 +136,10 @@ const AppSidebar = ({
   const showRecent = ["chat", "learning", "shopping", "research", "slides", "videos", "images", "code"].includes(currentMode);
   const showsUnifiedChatHistory =
     currentMode === "chat" || currentMode === "research" || currentMode === "slides";
+  // In the general (chat) sidebar, surface conversations from every service —
+  // videos, images, code, learning, shopping — so users can find any past
+  // session without switching workspaces.
+  const showsAllServicesHistory = currentMode === "chat";
 
   // Hydrate from local cache (user info + conversations) before network.
   // SECURITY: never read credits / subscription / billing info from localStorage —
@@ -281,7 +285,11 @@ const AppSidebar = ({
 
     const validModes = ["code", "images", "videos", "learning", "shopping", "research", "slides"];
     const modeFilter = validModes.includes(currentMode) ? currentMode : "chat";
-    const modesToFetch = showsUnifiedChatHistory ? ["chat", "research", "slides"] : [modeFilter];
+    const modesToFetch = showsAllServicesHistory
+      ? ["chat", "research", "slides", "videos", "images", "code", "learning", "shopping"]
+      : showsUnifiedChatHistory
+        ? ["chat", "research", "slides"]
+        : [modeFilter];
 
     const { data: memberRows } = await supabase
       .from("conversation_members")
