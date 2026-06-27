@@ -168,10 +168,13 @@ Deno.serve(async (req) => {
   }
 
   const system = mode === "video" ? SYSTEM_VIDEO : SYSTEM_IMAGES;
+  const targetCount = sceneHint > 0 ? sceneHint : 1;
   const userMsg = [
     `User idea: ${prompt}`,
     `Chosen model: ${modelName}`,
-    sceneHint ? `Preferred number of ${mode === "video" ? "scenes" : "shots"}: ${sceneHint}` : "",
+    `REQUIRED number of ${mode === "video" ? "scenes/clips" : "images"}: ${targetCount} (return EXACTLY this many).`,
+    body?.aspect_ratio ? `Aspect ratio: ${body.aspect_ratio}` : "",
+    body?.duration_seconds ? `Each clip duration: ${body.duration_seconds}s` : "",
   ]
     .filter(Boolean)
     .join("\n");
