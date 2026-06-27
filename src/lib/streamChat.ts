@@ -187,6 +187,16 @@ export async function streamChat({
     let completed = false;
     const authToken = await getAccessToken();
     const fingerprint = getAnonFingerprint();
+    // Per-mode + per-model system prompt override (learning mode, model
+    // voices, depth/language rules). The edge function uses customSystem
+    // verbatim when present.
+    let customSystem: string | null = null;
+    try {
+      const mod = await import("@/lib/modelSystemPrompts");
+      customSystem = mod.buildCustomSystem(chatMode, selectedModel?.id);
+    } catch {
+      customSystem = null;
+    }
     const resp = await fetch(CHAT_URL, {
       method: "POST",
       headers: {
@@ -209,6 +219,7 @@ export async function streamChat({
         selectedModel,
         activeSkill,
         availableSkills,
+        customSystem,
       }),
       signal,
     });

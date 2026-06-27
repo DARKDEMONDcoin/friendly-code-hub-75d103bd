@@ -314,7 +314,7 @@ const AnimatedInput = ({
         <div className="chat-composer-frame chat-mobile-input-glow composer-card pointer-events-auto rounded-[1.35rem] px-4 pt-1 pb-2 relative z-10 bg-background md:bg-card md:rounded-[25px] md:px-3.5 md:pt-3.5 md:pb-3 md:border md:border-foreground/[0.02]">
           {/* Active service strip — fused into the top of the composer card */}
           {headerSlot && (
-            <div className="-mx-2 -mt-1 mb-1.5 pointer-events-auto">{headerSlot}</div>
+            <div className="md:hidden -mx-2 -mt-1 mb-1.5 pointer-events-auto">{headerSlot}</div>
           )}
           <AnimatePresence>
 

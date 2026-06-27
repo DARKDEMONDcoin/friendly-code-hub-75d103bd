@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import MegsyStar from "@/components/files/MegsyStar";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
 
 type MenuView = "main" | "rename" | "invite" | "share" | "delete";
 
@@ -200,17 +201,20 @@ export default function MobileChatHeader({
         ) : null}
 
         {!hasConversation && (
-          <Link
-            to="/pricing"
-            aria-label="Upgrade Megsy"
-            data-testid="mobile-upgrade"
-            className="h-9 inline-flex items-center gap-1.5 px-3 rounded-full bg-brand-action text-brand-ink border-[2.5px] border-brand-ink shadow-[2px_2px_0_rgba(59,130,246,0.32)] active:translate-x-[1px] active:translate-y-[1px] transition-all"
-          >
-            <MegsyStar size={16} static className="text-brand-ink" />
-            <span className="text-[12.5px] font-black leading-none whitespace-nowrap">
-              Get Plus
-            </span>
-          </Link>
+          <div className="flex items-center gap-1">
+            <NotificationCenter />
+            <Link
+              to="/pricing"
+              aria-label="Upgrade Megsy"
+              data-testid="mobile-upgrade"
+              className="h-9 inline-flex items-center gap-1.5 px-3 rounded-full bg-brand-action text-brand-ink border-[2.5px] border-brand-ink shadow-[2px_2px_0_rgba(59,130,246,0.32)] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+            >
+              <MegsyStar size={16} static className="text-brand-ink" />
+              <span className="text-[12.5px] font-black leading-none whitespace-nowrap">
+                Get Plus
+              </span>
+            </Link>
+          </div>
         )}
       </div>
 

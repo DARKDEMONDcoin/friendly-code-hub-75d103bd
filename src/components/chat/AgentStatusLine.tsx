@@ -145,9 +145,6 @@ const AgentStatusLine = ({ searchStatus, toolActivity, userText }: AgentStatusLi
         <motion.div key={key} className="flex items-center gap-2.5" {...motionProps}>
           <span className="relative inline-flex items-center justify-center w-5 h-5 shrink-0">
             {icon}
-            {phase === "tool" && (
-              <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: MEGSY_BLUE }} />
-            )}
           </span>
           {label && (
             <span
