@@ -89,7 +89,7 @@ interface Props {
   /** Triggered when the user presses "Merge into one video". Only shown for video
    * results once 2+ scenes have finished successfully. */
   onMergeVideos?: () => void;
-  mergeStatus?: "idle" | "merging" | "done" | "error";
+  mergeStatus?: "idle" | "merging" | "done" | "error" | "unavailable";
   mergeError?: string;
   finalVideoUrl?: string;
 }
