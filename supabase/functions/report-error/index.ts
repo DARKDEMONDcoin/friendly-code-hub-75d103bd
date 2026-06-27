@@ -226,6 +226,25 @@ async function handleWorkspaceNotify(req: Request): Promise<Response> {
     return json(200, { ok: true });
   }
 
+  // Best-effort in-app notification if invitee already has an account
+  try {
+    const { data: existingUser } = await admin
+      .from("profiles")
+      .select("user_id")
+      .eq("email", String(to).toLowerCase())
+      .maybeSingle();
+    if (existingUser?.user_id) {
+      await admin.from("notifications").insert({
+        user_id: existingUser.user_id,
+        type: "workspace_invite",
+        title: `Invitation to ${ws.name || workspace_name}`,
+        message: `You've been invited to join ${ws.name || workspace_name}. Open the link to accept.`,
+        read: false,
+        metadata: { workspace_id, link },
+      });
+    }
+  } catch { /* non-fatal */ }
+
   if (!RESEND_API_KEY) return json(502, { ok: false, error: "resend_not_configured" });
   const safeName = escapeHtml(workspace_name || ws.name || "Workspace");
   const safeLink = escapeHtml(link);
