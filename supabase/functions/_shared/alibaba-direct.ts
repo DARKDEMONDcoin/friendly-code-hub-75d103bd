@@ -59,7 +59,7 @@ const FAILURE_BLOCK_THRESHOLD = 5;
 // host is wrong for that key. Never block based on probe-source auth failures.
 function isProbeSource(source?: string): boolean {
   if (!source) return false;
-  return source.includes("+default") || source.includes("+maas") || source.includes("+workspace");
+  return source.includes("+default") || source.includes("+maas") || source.includes("+workspace") || source.includes("+derived");
 }
 
 function getAdmin() {
