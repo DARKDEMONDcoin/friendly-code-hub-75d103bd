@@ -16,7 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import MegsyStar from "@/components/files/MegsyStar";
-import NotificationCenter from "@/components/notifications/NotificationCenter";
+
 
 type MenuView = "main" | "rename" | "invite" | "share" | "delete";
 
@@ -202,7 +202,6 @@ export default function MobileChatHeader({
 
         {!hasConversation && (
           <div className="flex items-center gap-1">
-            <NotificationCenter />
             <Link
               to="/pricing"
               aria-label="Upgrade Megsy"

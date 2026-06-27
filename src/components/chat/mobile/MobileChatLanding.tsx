@@ -667,48 +667,6 @@ const MobileChatLanding = ({
         </div>
       </div>
 
-      {/* Floating orb that flies down to hover above the composer when the user
-          starts typing or picks a mode. Speaks rotating short phrases. */}
-      <AnimatePresence>
-        {showFloatingOrb && (
-          <motion.div
-            key="float-orb"
-            initial={{ opacity: 0, y: -120, scale: 0.7 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -40, scale: 0.7 }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            className="md:hidden fixed left-4 z-30 pointer-events-none flex items-end gap-2"
-            style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 210px)" }}
-          >
-            <motion.div
-              animate={{ y: [0, -5, 0], rotate: [-3, 3, -3] }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-              className="w-[64px] h-[64px] shrink-0"
-            >
-              <OrbSvg lookDown />
-            </motion.div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={phrase}
-                initial={{ opacity: 0, y: 6, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="relative mb-2 max-w-[58vw] rounded-2xl rounded-bl-sm px-3 py-1.5 text-[12.5px]"
-                style={{
-                  backgroundColor: "hsl(var(--brand-action))",
-                  color: "hsl(var(--brand-ink))",
-                  border: "2px solid hsl(var(--brand-ink))",
-                  boxShadow: "3px 3px 0 rgba(59,130,246,0.35)",
-                  fontWeight: 800,
-                }}
-              >
-                <span className="block leading-snug">{phrase}</span>
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Integrations bottom sheet — pure black, transparent brand icons */}
       <GlassSheet open={connectOpen} onOpenChange={setConnectOpen}>
