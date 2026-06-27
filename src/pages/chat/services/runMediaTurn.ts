@@ -137,6 +137,10 @@ export async function runMediaTurn(args: RunMediaTurnArgs): Promise<void> {
             prompt: text,
             model_slug: modelLocal.slug,
             model_name: modelLocal.name,
+            // Honor user's explicit count from settings.
+            scene_hint: settings.count ?? 1,
+            aspect_ratio: settings.aspectRatio,
+            duration_seconds: modeLocal === "video" ? (settings.duration ?? videoDurationSec) : undefined,
           },
         });
         if (error || !data || !Array.isArray(data.scenes)) {
