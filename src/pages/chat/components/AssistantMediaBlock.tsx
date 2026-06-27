@@ -127,43 +127,24 @@ export default function AssistantMediaBlock({ msg, setMessages, setInput }: Prop
                 ),
               );
               try {
-                const { data, error } = await supabase.functions.invoke("video-agent", {
-                  body: { action: "merge_urls", urls },
+                const { mergeVideosInBrowser } = await import("@/lib/mergeVideosClient");
+                const blob = await mergeVideosInBrowser(urls, (p) => {
+                  if (p.stage === "encoding" && typeof p.progress === "number") {
+                    // Optional: could surface progress; keep status as merging.
+                  }
                 });
-                if (!error && data?.merge_skipped) {
-                  const note =
-                    "دمج الفيديوهات على الخادم غير متاح حاليًا (ffmpeg.wasm لا يعمل في Edge Runtime). نزّل المقاطع وادمجها محليًا.";
-                  setMessages((prev) =>
-                    prev.map((mm) =>
-                      matches(mm)
-                        ? { ...mm, mediaMergeStatus: "unavailable", mediaMergeError: note }
-                        : mm,
-                    ),
-                  );
-                  toast.message(note);
-                  return;
-                }
-                if (error || !data?.final_url) {
-                  throw new Error(error?.message || data?.message || "Merge failed");
-                }
-
+                const objectUrl = URL.createObjectURL(blob);
                 setMessages((prev) =>
                   prev.map((mm) =>
                     matches(mm)
                       ? {
                           ...mm,
                           mediaMergeStatus: "done",
-                          mediaFinalVideoUrl: data.final_url,
+                          mediaFinalVideoUrl: objectUrl,
                         }
                       : mm,
                   ),
                 );
-                if (msg.id) {
-                  void updateMessageMetadata(msg.id, {
-                    mediaMergeStatus: "done",
-                    mediaFinalVideoUrl: data.final_url,
-                  });
-                }
                 toast.success("Final video ready");
               } catch (e) {
                 const m = e instanceof Error ? e.message : "Merge failed";
