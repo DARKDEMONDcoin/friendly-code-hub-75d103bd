@@ -176,12 +176,22 @@ Deno.serve(async (req) => {
     .filter(Boolean)
     .join("\n");
 
+  // Detect whether user explicitly requested multiple scenes/clips.
+  const multiSceneRegex =
+    /\b(scenes?|story|sequence|multi[- ]?scene|shots?|clips?|chapters?|montage|episode)\b|مشاهد|قصة|قصه|سيناريو|تسلسل|متعدد|مشهدين|عدة مقاطع|كذا مقطع/i;
+  const numberedRegex = /\b([2-6])\s*(scenes?|shots?|clips?|videos?|مقاطع|مشاهد|فيديو)/i;
+  const userWantsMulti = multiSceneRegex.test(prompt) || numberedRegex.test(prompt) || sceneHint > 1;
+
   try {
     const plan = await callGateway(system, userMsg);
     if (mode === "images") {
       plan.scenes = plan.scenes.slice(0, 1).map((scene) => ({ ...scene, index: 1 }));
       plan.notes =
-        "If you want me to generate this with multiple models so you can compare results, tell me and I’ll do that.";
+        "If you want me to generate this with multiple models so you can compare results, tell me and I'll do that.";
+    } else if (mode === "video" && !userWantsMulti) {
+      // Hard clamp: single video unless user explicitly asked for a story.
+      plan.scenes = plan.scenes.slice(0, 1).map((scene) => ({ ...scene, index: 1 }));
+      plan.estimated_total_seconds = plan.scenes[0]?.duration_seconds;
     }
     return json(plan);
   } catch (e) {
