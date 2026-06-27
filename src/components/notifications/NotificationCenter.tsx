@@ -22,7 +22,7 @@ interface Props {
  * - Popover lists the latest notifications and lets the user clear them.
  */
 export default function NotificationCenter({ className, iconClassName }: Props) {
-  const { notifications, unreadCount, loading, markAllRead, markRead } =
+  const { notifications, unreadCount, loading, markAllRead, markOneRead } =
     useNotifications();
   const [open, setOpen] = useState(false);
 
@@ -102,7 +102,7 @@ export default function NotificationCenter({ className, iconClassName }: Props) 
                       !n.read && "bg-foreground/[0.025]",
                     )}
                     onClick={() => {
-                      if (!n.read) void markRead?.(n.id);
+                      if (!n.read) void markOneRead?.(n.id);
                     }}
                   >
                     <div className="flex items-start gap-2">
