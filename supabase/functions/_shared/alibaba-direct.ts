@@ -176,6 +176,11 @@ export async function getDashscopeCandidates(): Promise<KeyCandidate[]> {
         if (explicitHost) push(key, explicitHost, "media_provider_keys", row?.id, "media_provider_keys");
         const workspace = normalizeHost(row?.workspace_id);
         if (workspace) push(key, `${workspace}.ap-southeast-1.maas.aliyuncs.com`, "media_provider_keys+workspace", row?.id, "media_provider_keys");
+        // Auto-derive workspace endpoint from sk-ws-* keys when no explicit host is configured.
+        if (!explicitHost && !workspace) {
+          const derived = workspaceIdFromKey(key);
+          if (derived) push(key, `${derived}.ap-southeast-1.maas.aliyuncs.com`, "media_provider_keys+derived", row?.id, "media_provider_keys");
+        }
         for (const h of DEFAULT_HOSTS) push(key, h, "media_provider_keys+default", row?.id, "media_provider_keys");
       }
     } catch (_e) { /* table may not exist on some deployments */ }
