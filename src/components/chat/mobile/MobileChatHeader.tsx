@@ -202,7 +202,6 @@ export default function MobileChatHeader({
 
         {!hasConversation && (
           <div className="flex items-center gap-1">
-            <NotificationCenter />
             <Link
               to="/pricing"
               aria-label="Upgrade Megsy"
