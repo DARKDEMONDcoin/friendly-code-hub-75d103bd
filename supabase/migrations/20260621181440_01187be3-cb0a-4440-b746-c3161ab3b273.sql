@@ -1,0 +1,1 @@
+UPDATE public.reward_tasks SET reward_credits = 25 WHERE task_key = 'invite_10';

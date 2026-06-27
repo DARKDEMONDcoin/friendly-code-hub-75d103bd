@@ -1,0 +1,173 @@
+/**
+ * Claude-style desktop skin for /chat.
+ * Scope: `[data-skin="claude"]` AND viewport ≥ md. Mobile untouched.
+ */
+
+@media (min-width: 768px) {
+  [data-skin="claude"] {
+    background-color: #000 !important;
+    color: #ECECEC !important;
+    --user-bubble: #1F1F1F;
+    --user-bubble-text: #ECECEC;
+  }
+
+  /* Sidebar */
+  [data-skin="claude"] > aside {
+    background: #0B0B0B !important;
+    border-right-color: #1A1A1A !important;
+  }
+  [data-skin="claude"] > aside * {
+    --sidebar: 0 0% 4%;
+    --sidebar-background: 0 0% 4%;
+  }
+
+  /* Main chat surface */
+  [data-skin="claude"] .chat-surface-dark { background: #000 !important; }
+
+  /* Assistant prose — Claude serif */
+  [data-skin="claude"] .prose-chat,
+  [data-skin="claude"] .prose-chat * {
+    font-family: 'Instrument Serif', 'Source Serif 4', Georgia, ui-serif, serif !important;
+  }
+  [data-skin="claude"] .prose-chat {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: #ECECEC;
+    letter-spacing: 0.005em;
+  }
+  [data-skin="claude"] .prose-chat code,
+  [data-skin="claude"] .prose-chat pre,
+  [data-skin="claude"] .prose-chat pre * {
+    font-family: ui-monospace, 'JetBrains Mono', SFMono-Regular, Menlo, monospace !important;
+  }
+
+  /* User bubble */
+  [data-skin="claude"] .user-bubble {
+    background: #1F1F1F !important;
+    color: #ECECEC !important;
+    border: 1px solid #2A2A2A;
+    border-radius: 1.25rem !important;
+    box-shadow: none !important;
+  }
+
+  /* Composer */
+  [data-skin="claude"] .composer-card,
+  [data-skin="claude"] .composer-card.md\:bg-card,
+  [data-skin="claude"] .chat-composer-frame {
+    background: #161616 !important;
+    border-color: #2A2A2A !important;
+    box-shadow: 0 10px 40px -16px rgba(0,0,0,0.8) !important;
+    backdrop-filter: none !important;
+  }
+  [data-skin="claude"] div.md\:bg-border\/60 { background: transparent !important; }
+
+  /* Active chip — Claude warm orange */
+  [data-skin="claude"] [aria-pressed="true"][class*="rounded-full"] {
+    background-color: #C96442 !important;
+    border-color: #C96442 !important;
+    box-shadow: 0 0 0 3px rgba(201,100,66,0.18), 0 6px 18px -6px #C96442 !important;
+  }
+  [data-skin="claude"] [aria-pressed="true"] > span.bg-white\/95 {
+    background-color: #1A1A1A !important;
+    color: #ECECEC !important;
+  }
+
+  /* Chips row — single horizontal strip with overflow scroll */
+  [data-skin="claude"] [data-chips-row] {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    row-gap: 0.6rem !important;
+    margin-top: 0.7rem !important;
+    padding: 0.25rem 0.25rem !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  [data-skin="claude"] [data-chips-row]::-webkit-scrollbar { display: none !important; }
+  [data-skin="claude"] [data-chips-row] button {
+    order: 0 !important;
+    flex: 0 0 auto !important;
+    height: 2.25rem !important;
+    padding: 0 1rem !important;
+    margin: 0 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.005em;
+  }
+  [data-skin="claude"] [data-chips-row] > button:nth-child(n+5) { order: 0 !important; }
+  [data-skin="claude"] [data-chips-row]::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* Plus menu — Claude card styling (position handled by component) */
+  [data-skin="claude"] [data-plus-menu] {
+    margin-left: 0.5rem !important;
+    width: 300px !important;
+    max-height: min(52vh, 430px) !important;
+    background: #151515 !important;
+    color: #ECECEC !important;
+    border: 1px solid #303030 !important;
+    border-radius: 12px !important;
+    box-shadow:
+      0 18px 44px -18px rgba(0,0,0,0.9),
+      0 1px 0 rgba(255,255,255,0.04) inset !important;
+    padding: 0.35rem !important;
+  }
+
+  [data-skin="claude"] [data-plus-menu] button,
+  [data-skin="claude"] [data-plus-menu] [role="menuitem"] {
+    background: transparent !important;
+    color: #ECECEC !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.48rem 0.6rem !important;
+    font-weight: 500 !important;
+    min-height: 2.25rem !important;
+  }
+  [data-skin="claude"] [data-plus-menu] svg { color: #D1A18D !important; }
+  [data-skin="claude"] [data-plus-menu] .bg-surface-4,
+  [data-skin="claude"] [data-plus-menu] .h-\[1\.5px\] {
+    background: #2A2A2A !important;
+  }
+  [data-skin="claude"] [data-plus-menu] button:hover,
+  [data-skin="claude"] [data-plus-menu] [role="menuitem"]:hover {
+    background: #1F1F1F !important;
+  }
+
+  /* Center greeting — Claude serif, bright and clearly visible */
+  [data-skin="claude"] h1[data-greeting] {
+    font-family: 'Instrument Serif', 'Source Serif 4', Georgia, ui-serif, serif !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.015em !important;
+    font-size: 64px !important;
+    line-height: 1.05 !important;
+    color: #FAF7F2 !important;
+    transform: none !important;
+    opacity: 1 !important;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  [data-skin="claude"] h1[data-greeting] span {
+    color: #E08968 !important;
+    font-style: italic;
+  }
+
+
+
+  /* Remove upgrade / Pro CTAs — keep the sidebar credits balance visible */
+  [data-skin="claude"] aside button[title*="Upgrade" i],
+  [data-skin="claude"] aside a[aria-label*="Upgrade" i],
+  [data-skin="claude"] aside [title*="Upgrade" i],
+  [data-skin="claude"] [aria-label="Unlock Pro"],
+  [data-skin="claude"] [aria-label*="Upgrade" i],
+  [data-skin="claude"] a[aria-label="Upgrade Megsy"] {
+    display: none !important;
+  }
+}
+

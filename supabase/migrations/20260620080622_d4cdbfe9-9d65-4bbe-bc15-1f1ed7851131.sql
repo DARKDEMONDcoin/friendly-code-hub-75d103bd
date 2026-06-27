@@ -1,0 +1,1 @@
+ALTER TABLE public.generated_sites ADD COLUMN IF NOT EXISTS preview_url text;

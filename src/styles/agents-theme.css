@@ -1,0 +1,288 @@
+/* Agents v2 — inherits the SITE design system (light or dark).
+   Scoped to .agents-theme. All av-* tokens map onto the project's
+   existing semantic tokens so the agents pages always match the rest
+   of the site (theme + accent color).
+*/
+
+.agents-theme {
+  /* Map onto site tokens — keep them as raw HSL triplets */
+  --av-bg: var(--background);
+  --av-bg-2: var(--muted);
+  --av-bg-3: var(--accent);
+  --av-primary: var(--primary);
+  --av-primary-2: var(--primary);
+  --av-accent: var(--primary);
+  --av-success: var(--success, 152 76% 40%);
+  --av-warn: var(--warning, 42 95% 50%);
+  --av-danger: var(--destructive, 0 82% 60%);
+
+  --av-fg: var(--foreground);
+  --av-fg-2: var(--muted-foreground);
+  --av-fg-3: var(--muted-foreground);
+
+  --av-surface: var(--card);
+  --av-surface-2: var(--card);
+  --av-border: var(--border);
+  --av-border-soft: var(--border);
+
+  --av-radius: 1.25rem;
+  --av-radius-lg: 1.75rem;
+
+  --av-font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --av-font-body: "DM Sans", "Inter", system-ui, sans-serif;
+
+  color: hsl(var(--av-fg));
+  background: hsl(var(--av-bg));
+  font-family: var(--av-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.agents-theme .av-display {
+  font-family: var(--av-font-display);
+  letter-spacing: -0.02em;
+}
+.agents-theme .av-mono {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Soft painterly background using site primary */
+.agents-theme .av-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, hsl(var(--av-primary) / 0.1), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 10%, hsl(var(--av-primary) / 0.08), transparent 60%),
+    radial-gradient(ellipse 70% 70% at 50% 110%, hsl(var(--av-primary) / 0.06), transparent 60%),
+    hsl(var(--av-bg));
+}
+
+/* Glass card — neutral surface that adapts to light/dark */
+.agents-theme .av-glass {
+  background: hsl(var(--av-surface) / 0.85);
+  border: 1px solid hsl(var(--av-border) / 0.7);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-radius: var(--av-radius);
+  box-shadow:
+    inset 0 1px 0 0 hsl(var(--av-fg) / 0.03),
+    0 10px 30px -18px hsl(var(--av-fg) / 0.18);
+}
+
+.agents-theme .av-glass-hover {
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+.agents-theme .av-glass-hover:hover {
+  border-color: hsl(var(--av-primary) / 0.45);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 0 hsl(var(--av-fg) / 0.05),
+    0 20px 40px -20px hsl(var(--av-primary) / 0.3);
+}
+
+/* Aurora text — uses primary so it follows the user's accent */
+.agents-theme .av-aurora {
+  background: linear-gradient(
+    110deg,
+    hsl(var(--av-fg)) 0%,
+    hsl(var(--av-primary)) 40%,
+    hsl(var(--av-primary)) 60%,
+    hsl(var(--av-fg)) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: av-aurora 8s linear infinite;
+}
+@keyframes av-aurora {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Border beam */
+.agents-theme .av-beam {
+  position: relative;
+  isolation: isolate;
+}
+.agents-theme .av-beam::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    transparent 0deg,
+    hsl(var(--av-primary)) 20deg,
+    hsl(var(--av-primary) / 0.6) 40deg,
+    transparent 80deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: av-spin 6s linear infinite;
+  pointer-events: none;
+}
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes av-spin {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.agents-theme .av-dots {
+  background-image: radial-gradient(hsl(var(--av-fg) / 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Buttons */
+.agents-theme .av-btn-primary {
+  background: hsl(var(--av-primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px -10px hsl(var(--av-primary) / 0.55);
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.25s ease;
+}
+.agents-theme .av-btn-primary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+.agents-theme .av-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.agents-theme .av-btn-ghost {
+  background: hsl(var(--av-fg) / 0.04);
+  border: 1px solid hsl(var(--av-border));
+  border-radius: 999px;
+  color: hsl(var(--av-fg-2));
+  transition: all 0.2s ease;
+}
+.agents-theme .av-btn-ghost:hover {
+  background: hsl(var(--av-fg) / 0.08);
+  color: hsl(var(--av-fg));
+  border-color: hsl(var(--av-primary) / 0.5);
+}
+
+/* Inputs */
+.agents-theme .av-input {
+  background: hsl(var(--av-surface));
+  border: 1px solid hsl(var(--av-border));
+  border-radius: 14px;
+  color: hsl(var(--av-fg));
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.agents-theme .av-input:focus {
+  outline: none;
+  border-color: hsl(var(--av-primary) / 0.6);
+  box-shadow: 0 0 0 3px hsl(var(--av-primary) / 0.15);
+}
+.agents-theme .av-input::placeholder {
+  color: hsl(var(--av-fg-3));
+  opacity: 0.7;
+}
+
+/* Chip */
+.agents-theme .av-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: hsl(var(--av-fg) / 0.05);
+  border: 1px solid hsl(var(--av-border));
+  color: hsl(var(--av-fg-2));
+}
+
+/* Scrollbar */
+.agents-theme ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.agents-theme ::-webkit-scrollbar-thumb {
+  background: hsl(var(--av-fg) / 0.15);
+  border-radius: 999px;
+}
+.agents-theme ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--av-fg) / 0.25);
+}
+
+/* Prose */
+.agents-theme .av-prose {
+  color: hsl(var(--av-fg));
+  font-size: 14px;
+  line-height: 1.65;
+}
+.agents-theme .av-prose p {
+  margin: 0 0 0.65em;
+}
+.agents-theme .av-prose a {
+  color: hsl(var(--av-primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.agents-theme .av-prose code {
+  background: hsl(var(--av-fg) / 0.08);
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-family: "JetBrains Mono", monospace;
+}
+.agents-theme .av-prose pre {
+  background: hsl(var(--av-bg-2));
+  border: 1px solid hsl(var(--av-border));
+  padding: 12px 14px;
+  border-radius: 12px;
+  overflow-x: auto;
+  font-size: 12.5px;
+}
+.agents-theme .av-prose ul {
+  padding-left: 1.2em;
+}
+.agents-theme .av-prose li {
+  margin: 0.2em 0;
+}
+.agents-theme .av-prose h1,
+.agents-theme .av-prose h2,
+.agents-theme .av-prose h3 {
+  font-family: var(--av-font-display);
+  letter-spacing: -0.01em;
+  margin: 0.8em 0 0.35em;
+}
+
+/* ----- Mobile polish ----- */
+@media (max-width: 640px) {
+  .agents-theme .av-glass {
+    border-radius: 1rem;
+    backdrop-filter: blur(10px);
+  }
+  .agents-theme h1.av-display {
+    font-size: clamp(30px, 9vw, 40px) !important;
+    line-height: 1.05 !important;
+  }
+  .agents-theme .av-btn-primary,
+  .agents-theme .av-btn-ghost {
+    min-height: 40px;
+  }
+}

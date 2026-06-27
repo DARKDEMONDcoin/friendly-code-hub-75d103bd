@@ -1,0 +1,12 @@
+
+ALTER TABLE public.marketing_campaigns
+  ADD COLUMN IF NOT EXISTS goal TEXT,
+  ADD COLUMN IF NOT EXISTS languages TEXT[] DEFAULT ARRAY['ar','en'],
+  ADD COLUMN IF NOT EXISTS hashtags TEXT[] DEFAULT ARRAY[]::TEXT[],
+  ADD COLUMN IF NOT EXISTS schedule_cron TEXT DEFAULT '0 9 * * *',
+  ADD COLUMN IF NOT EXISTS ai_model TEXT DEFAULT 'qwen-max',
+  ADD COLUMN IF NOT EXISTS ai_prompt_template TEXT,
+  ADD COLUMN IF NOT EXISTS topics TEXT[] DEFAULT ARRAY[]::TEXT[],
+  ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true;
+
+ALTER TABLE public.marketing_campaigns ALTER COLUMN tone SET DEFAULT 'professional';

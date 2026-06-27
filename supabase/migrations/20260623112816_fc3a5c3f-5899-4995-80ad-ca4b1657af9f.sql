@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS public.lemondata_keys CASCADE;
+DROP TABLE IF EXISTS public.agents_catalog CASCADE;
+DROP TABLE IF EXISTS public.letta_user_agents CASCADE;
+DROP TABLE IF EXISTS public.referral_tiers CASCADE;
+DROP TABLE IF EXISTS public.rp_referral_clicks CASCADE;
+DROP TABLE IF EXISTS public.external_subscription_api_keys CASCADE;
+DROP TABLE IF EXISTS public.code_messages CASCADE;
+DROP TABLE IF EXISTS public.code_agent_runs CASCADE;
+DROP TABLE IF EXISTS public.code_project_files CASCADE;
+DROP TABLE IF EXISTS public.code_prompts CASCADE;
+DROP TABLE IF EXISTS public.code_project_sandboxes CASCADE;
+DROP TABLE IF EXISTS public.code_projects CASCADE;
