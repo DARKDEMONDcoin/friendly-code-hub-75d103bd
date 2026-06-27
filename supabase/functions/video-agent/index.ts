@@ -395,22 +395,37 @@ Deno.serve(async (req) => {
       });
 
       const audioUrl = body.audio_url || row?.output?.audio_url || undefined;
-      const merged = await mergeClips(urls, audioUrl);
-      const path = `video-agent/${job_id}.mp4`;
-      const finalUrl = await uploadToStorage(merged, path);
-
-      await db(`background_jobs?id=eq.${job_id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          status: "complete",
-          phase: "merged",
-          progress: 100,
-          output: { ...row.output, final_url: finalUrl },
-          finished_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString(),
-        }),
-      });
-      return json({ job_id, final_url: finalUrl, shots });
+      try {
+        const merged = await mergeClips(urls, audioUrl);
+        const path = `video-agent/${job_id}.mp4`;
+        const finalUrl = await uploadToStorage(merged, path);
+        await db(`background_jobs?id=eq.${job_id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "complete",
+            phase: "merged",
+            progress: 100,
+            output: { ...row.output, final_url: finalUrl },
+            finished_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString(),
+          }),
+        });
+        return json({ job_id, final_url: finalUrl, shots });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await db(`background_jobs?id=eq.${job_id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "complete",
+            phase: "clips_ready",
+            progress: 100,
+            output: { ...row.output, clip_urls: urls, merge_error: msg },
+            finished_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString(),
+          }),
+        });
+        return json({ job_id, clip_urls: urls, shots, merge_error: msg, merge_skipped: true });
+      }
     }
 
     // ── merge_urls (inline) ───────────────────────────────
@@ -422,12 +437,18 @@ Deno.serve(async (req) => {
         : [];
       if (urls.length < 1) return json({ error: "no_urls" }, 400);
       const audioUrl: string | undefined = body.audio_url || undefined;
-      const merged = await mergeClips(urls, audioUrl);
-      const id = crypto.randomUUID();
-      const path = `video-agent/inline-${id}.mp4`;
-      const finalUrl = await uploadToStorage(merged, path);
-      return json({ final_url: finalUrl, clip_count: urls.length });
+      try {
+        const merged = await mergeClips(urls, audioUrl);
+        const id = crypto.randomUUID();
+        const path = `video-agent/inline-${id}.mp4`;
+        const finalUrl = await uploadToStorage(merged, path);
+        return json({ final_url: finalUrl, clip_count: urls.length });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return json({ clip_urls: urls, clip_count: urls.length, merge_error: msg, merge_skipped: true });
+      }
     }
+
 
     return json({ error: "unknown_action" }, 400);
   } catch (err) {
