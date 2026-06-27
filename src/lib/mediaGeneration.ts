@@ -176,11 +176,13 @@ async function generateVideoScene(
   scene: MediaPlanScene,
   modelSlug: string,
   onPartial?: ScenePartialCb,
+  aspectRatio?: string,
 ): Promise<string> {
   const body: Record<string, unknown> = {
     prompt: scene.prompt,
     model_slug: modelSlug,
     duration: scene.duration_seconds || 5,
+    aspect_ratio: aspectRatio,
   };
   if (scene.first_frame_url) body.start_frame = scene.first_frame_url;
   if (scene.last_frame_url) body.end_frame = scene.last_frame_url;
