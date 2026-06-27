@@ -627,7 +627,7 @@ const MobileChatLanding = ({
           fontFamily: '"Space Grotesk", "Inter", system-ui, sans-serif',
         }}
       >
-        <div className="min-h-full flex flex-col items-center justify-start text-center pt-[clamp(48px,14vh,140px)]">
+        <div className="min-h-full flex flex-col items-center justify-center text-center">
           <div className="flex flex-col items-center justify-center gap-4 w-full max-w-sm">
             {/* Display headline — 900 weight, tight letter spacing */}
             {!isReactive && (
