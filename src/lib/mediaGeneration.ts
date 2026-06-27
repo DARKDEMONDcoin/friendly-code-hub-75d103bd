@@ -294,8 +294,8 @@ export async function regenerateScene(
   try {
     const url =
       plan.mode === "video"
-        ? await generateVideoScene(scene, plan.modelSlug, onPartial)
-        : await generateImageScene(scene, plan.modelSlug, onPartial);
+        ? await generateVideoScene(scene, plan.modelSlug, onPartial, plan.aspectRatio)
+        : await generateImageScene(scene, plan.modelSlug, onPartial, plan.aspectRatio);
     return {
       index: scene.index,
       title: scene.title,
